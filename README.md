@@ -1,7 +1,9 @@
-# iobdocumentsreceiving-airtable-trello-bridge
+# Documents Dispatch and Receipt Log 
+🚀 Automate your Airtable → GitHub → Trello workflow in one click.
+
+📌 自動化管理公文紀錄，從 Airtable 到 GitHub，再同步到 Trello！
 
 ## Airtable → GitHub → Trello Automation Flow
-
 📌Project Introduction:
 This project demonstrates how to integrate Airtable’s “Documents Dispatch & Receipt Log” with GitHub Issues and Trello.  
 
@@ -60,7 +62,20 @@ graph LR
   *Value:* Bridges multiple tools often used in modern workspaces, making the workflow more versatile.  
 - [ ] **Add unit tests for API calls**  
   Implement automated tests (e.g., with Jest + mocked Trello API) to validate API requests and responses.  
-  *Value:* Ensures the reliability and maintainability of the automation, and demonstrates professional software engineering practices.  
+  *Value:* Ensures the reliability and maintainability of the automation, and demonstrates professional software engineering practices.
+
+## Repository Structure
+```
+├── .github/
+│ └── workflows/ # GitHub Actions workflows (自動化流程設定)
+│
+├── images/ # Airtable, Trello demo screenshots (專案截圖)
+│ ├── airtable-demo.png
+│ └── trello-demo.png
+│
+├── README.md (專案說明文件)
+└── LICENSE (optional) (授權檔案)
+```
 
  ## 中文補充
 這個專案示範如何把 Airtable 的【公文收發紀錄表】與 GitHub Issue、Trello 串接，勾選紀錄後系統會自動建立 GitHub Issue，並同步在 Trello 的 To Do List 建立卡片。
