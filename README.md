@@ -17,9 +17,9 @@ This project demonstrates how to integrate Airtable’s “Documents Dispatch & 
 
 🚀Demonstration screenshots:
 
-###Airtable checked records
+1. Airtable checked records
 ![Airtable checked record example](images/airtable-demo.png)
-###Trello automatically creates a new card in the TO DO List Column
+2. Trello automatically creates a new card in the TO DO List Column
 ![Trello new card automatically create example](images/trello-demo.png)
 
 ## Workflow Diagram
@@ -38,9 +38,9 @@ graph LR
 
   
 ## 💖Features:
--Secure management of API Keys/Tokens through GitHub Secrets
--Fully automated process
--Extensible to other project workflows
+1. Secure management of API Keys/Tokens through GitHub Secrets
+2. Fully automated process
+3. Extensible to other project workflows
 
  ## 中文補充
 這個專案示範如何把 Airtable 的【公文收發紀錄表】與 GitHub Issue、Trello 串接，勾選紀錄後系統會自動建立 GitHub Issue，並同步在 Trello 的 To Do List 建立卡片。
