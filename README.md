@@ -23,6 +23,8 @@ This project demonstrates how to integrate Airtable’s “Documents Dispatch & 
 ![Airtable checked record example](images/airtable-demo.png)
 2. Trello automatically creates a new card in the TO DO List Column
 ![Trello new card automatically create example](images/trello-demo.png)
+3. Watch Demo Video
+[![Watch the video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
 
 ## Workflow Diagram
 The following flow illustrates the automation pipeline across Airtable, GitHub, and Trello.
