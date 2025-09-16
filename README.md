@@ -14,11 +14,21 @@ Whenever a record in Airtable is checked:
 -Github Issue + Github Actions
 -Trello Api
 
-🚀Demonstration of Results:
--Airtable  畫面示意
--GitHub Issue自動建立截圖
--Trello卡片自動新增截圖
+🚀Demonstration screenshots:
 
+###Airtable checked records
+![Airtable checked record example](images/airtable-demo.png)
+
+### Trello automatically creates a new card in the TO DO List Column
+![Trello new card automatically create example](images/trello-demo.png)
+
+## Workflow Diagram
+<code>```mermaid</code>
+graph LR
+  A[Airtable checked]-->B[GitHub creates Issue]
+  B --> C[GitHub Actions detect]
+  C --> D[Trello creates a new card]
+  
 💖Features:
 -Secure management of API Keys/Tokens through GitHub Secrets
 -Fully automated process
