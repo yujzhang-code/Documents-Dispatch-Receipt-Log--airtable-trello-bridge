@@ -1,3 +1,6 @@
+## Badge
+![Last Commit](https://img.shields.io/github/last-commit/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
+![Open Issues](https://img.shields.io/github/issues/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
 # 🚀 Automate your Airtable → GitHub → Trello workflow in one click!
 # Documents Dispatch and Receipt Log
 
@@ -87,11 +90,6 @@ graph LR
 ├── README.md 
 └── LICENSE (optional) 
 ```
-## Badge
-![Last Commit](https://img.shields.io/github/last-commit/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
-![Open Issues](https://img.shields.io/github/issues/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
-
-
  ## 中文補充
 📌 自動化管理公文紀錄，從 Airtable 到 GitHub，再同步到Trello！
 
