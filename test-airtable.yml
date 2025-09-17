@@ -1,0 +1,15 @@
+name: Test Airtable API
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Airtable API
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+        run: |
+          curl -s "https://api.airtable.com/v0/appwZVii6OUhyWPbp/公文收發紀錄?maxRecords=1" \
+            -H "Authorization: Bearer $AIRTABLE_TOKEN"
