@@ -15,7 +15,7 @@ This project demonstrates how to integrate Airtable’s “Documents Dispatch & 
 🔧Using Tools:
 * Airtable Automations
 * Github Issue + Github Actions
-* Trello Api
+* Trello API
 
 🚀Demonstration screenshots:
 
