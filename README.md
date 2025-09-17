@@ -1,7 +1,8 @@
+# 🚀 Automate your Airtable → GitHub → Trello workflow in one click!
 ## Badge
 ![Last Commit](https://img.shields.io/github/last-commit/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
 ![Open Issues](https://img.shields.io/github/issues/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
-# 🚀 Automate your Airtable → GitHub → Trello workflow in one click!
+
 # Documents Dispatch and Receipt Log
 
 ## Table of Contents
