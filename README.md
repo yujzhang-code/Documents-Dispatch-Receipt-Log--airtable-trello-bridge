@@ -1,7 +1,6 @@
-# Documents Dispatch and Receipt Log 
-🚀 Automate your Airtable → GitHub → Trello workflow in one click.
+# 🚀 Automate your Airtable → GitHub → Trello workflow in one click!
+# Documents Dispatch and Receipt Log
 
-📌 自動化管理公文紀錄，從 Airtable 到 GitHub，再同步到 Trello！
 
 ## Airtable → GitHub → Trello Automation Flow
 📌Project Introduction:
@@ -69,19 +68,33 @@ graph LR
 ## Repository Structure
 ```
 ├── .github/
-│ └── workflows/ # GitHub Actions workflows (自動化流程設定)
+│ └── workflows/ # GitHub Actions workflows 
 │
-├── images/ # Airtable, Trello demo screenshots (專案截圖)
+├── images/ # Airtable, Trello demo screenshots
 │ ├── airtable-demo.png
 │ └── trello-demo.png
 │
-├── README.md (專案說明文件)
-└── LICENSE (optional) (授權檔案)
+├── README.md 
+└── LICENSE (optional) 
 ```
 
  ## 中文補充
+📌 自動化管理公文紀錄，從 Airtable 到 GitHub，再同步到 Trello！
+
 這個專案示範如何把 Airtable 的【公文收發紀錄表】與 GitHub Issue、Trello 串接，勾選紀錄後系統會自動建立 GitHub Issue，並同步在 Trello 的 To Do List 建立卡片。
 未來規劃:
 * 未來可讓系統在建立 Trello 卡片時，同步把訊息推送到 Slack 平台，方便團隊即時掌握工作進度。
 * 把 Airtable 紀錄同步到 Notion 資料庫，適合需要跨平台管理專案或做長期歸檔。
 * 未來可以加上單元測試，讓系統自動檢查 API 呼叫是否正確，提升專案穩定性與專業度。
+## 資料庫結構
+```
+├── .github/
+│ └──GitHub 自動化流程設定
+│
+├── images/ Airtable, Trello 專案截圖
+│ ├── airtable-demo.png
+│ └── trello-demo.png
+│
+├── README.md 專案說明文件
+└── 授權檔案
+```
