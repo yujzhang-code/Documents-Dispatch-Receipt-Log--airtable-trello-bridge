@@ -12,4 +12,5 @@ jobs:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
         run: |
           curl -s "https://api.airtable.com/v0/appwZVii6OUhyWPbp/公文收發紀錄?maxRecords=1" \
-            -H "Authorization: Bearer $AIRTABLE_TOKEN"
+            -H "Authorization: Bearer $AIRTABLE_TOKEN"\
+            |  jp '.'
