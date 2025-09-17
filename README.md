@@ -89,7 +89,7 @@ graph LR
 ```
 
  ## 中文補充
-📌 自動化管理公文紀錄，從 Airtable 到 GitHub，再同步到 Trello！
+📌 自動化管理公文紀錄，從 Airtable 到 GitHub，再同步到Trello！
 
 這個專案示範如何把 Airtable 的【公文收發紀錄表】與 GitHub Issue、Trello 串接，勾選紀錄後系統會自動建立 GitHub Issue，並同步在 Trello 的 To Do List 建立卡片。
 未來規劃:
@@ -101,7 +101,7 @@ graph LR
 ├── .github/
 │ └──GitHub 自動化流程設定
 │
-├── images/ Airtable, Trello 專案截圖
+├── images/ Airtable、 Trello 專案截圖
 │ ├── airtable-demo.png
 │ └── trello-demo.png
 │
