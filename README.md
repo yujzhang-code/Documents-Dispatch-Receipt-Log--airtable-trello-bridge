@@ -108,3 +108,11 @@ graph LR
 ├── README.md 專案說明文件
 └── 授權檔案
 ```
+## Author
+👩‍💻 Yu-Jie Zhang  
+
+📧 Email: Ai.yujiezhang@outlook.com  
+For business inquiries regarding Aiyu Mindfulness愛語正念: aiyumindfulness@gmail.com
+
+🌐 Portfolio: [https://yujiezhang.com](https://sharonzhanga.wixsite.com/mysite)  
+(Planning to migrate to GitHub Portfolio site soon)
