@@ -10,7 +10,12 @@ jobs:
       - name: Call Airtable API
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_BASE_NAME: ${{ secrets.AIRTABLE_BASE_NAME }}
+          TRELLO_KEY: ${{ secrets.TRELLO_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
         run: |
-          curl -s "https://api.airtable.com/v0/appwZVii6OUhyWPbp/公文收發紀錄?maxRecords=1" \
-            -H "Authorization: Bearer $AIRTABLE_TOKEN"\
-            |  jq '.'
+          curl -s "https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_BASE_NAME}?maxRecords=1" \
+            -H "Authorization: Bearer $AIRTABLE_TOKEN" \
+            | jq '.'
