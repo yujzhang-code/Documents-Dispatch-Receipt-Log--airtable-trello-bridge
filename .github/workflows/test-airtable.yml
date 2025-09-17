@@ -16,8 +16,12 @@ jobs:
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
           TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
         run: |
-            echo "Calling Airtable..."
-            curl -v "https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_BASE_NAME}?maxRecords=1" \
-              -H "Authorization: Bearer $AIRTABLE_TOKEN" \
-              -H "Content-Type: application/json" \
+             echo "Calling Airtable..."
+             # 將表格名稱做 URL 編碼（適用中文/空白/特殊字元）
+             TABLE_ENC=$(printf '%s' "$AIRTABLE_BASE_NAME" | jq -sRr @uri)
+             URL="https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_ENC}?maxRecords=1"
+             echo "URL=$URL"
+             curl -sS "$URL" \
+               -H "Authorization: Bearer $AIRTABLE_TOKEN" \
+               -H "Content-Type: application/json" \
              | jq '.'
