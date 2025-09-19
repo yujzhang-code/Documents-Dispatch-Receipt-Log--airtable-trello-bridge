@@ -33,7 +33,50 @@ jobs:
           
       - name: Create Trello card (use Airtable field IDs)
         env:
-        TRELLO_KEY:       ${{ secrets.TRELLO_KEY }}
+           TRELLO_KEY:     ${{ secrets.TRELLO_KEY }}
+           TRELLO_TOKEN:   ${{ secrets.TRELLO_TOKEN  }}
+           TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
+           F_SUBJECT: ${{ secrets.TRELLO_FID_SUBJECT }}
+           F_DOCNO:   ${{ screts.TRELLO_FID_DOCNO }}
+           F_DUE:     ${{ secrets.TRELLO_FID_DUE }}
+        run: |
+          set -euo pipfail
+
+          J='${{ steps.airtable.outputs.json }}'
+          echo "Parsing Airtable JSON..."
+          SUBJECT=$(echo "$J" | jp -r --arg k "$F_SUBJECT" '.records[0].field[$k] // empty')
+          DOCNO=$(  echo "$J" | jp -r --arg k "$F_DOCNO"   '.records[0].field[$k} // empty')
+          DUE=$(    echo "$J" | jp -r --arg k "$F_DUE"     '.records[0].field[$k] // empty')
+
+          if [ -z "$SUBJECT' ] || [ "$SUBJECT" = "null" ]; then
+            echo "::error:: The Card Subject is not found! (please check AIRTABLE_FID_SUBJECT)"
+            exit 1
+          fi
+
+          DESC=""
+          if [ -n "${DOCNO:-}" ] && [ "$DOCNO"] != "null" ]; then
+            DESC="公文文號: $DOCNO"
+          fi
+
+          echo "Will create Trello card:"
+          echo "  name = $SUBJECT"
+          echo "  desc = ${DESC:-<empty>}"
+          echo "  due  = ${DUE:-<none>}"
+
+          params=(
+           --data-urlencode "name=$SUBJECT"
+           --data-urlencode "desc=$DESC"
+           -d "idList=$TRELLO_LIST_ID"
+           -d "key=$TRELLO_KEY"
+           -d "token=$TRELLO_TOKEN"
+          )
+          if [-n "${DUE:-}" ] && [ "$DUE" !="null" ];then
+            params+=(-d "due=$DUE")
+          fi
+
+          echo "Creating Trello Card..."
+          curl -sS -X POST "https://api.trello.com/1/cards" "${params[@]}" | jq '.'
+          
         
 
       
