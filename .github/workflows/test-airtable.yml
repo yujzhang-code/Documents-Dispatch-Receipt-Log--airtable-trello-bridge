@@ -9,13 +9,13 @@ jobs:
     steps:
       - name: Call Airtable API
         env:
-          AIRTABLE_TOKEN:      ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID:    ${{ secrets.AIRTABLE_BASE_ID }}
-          AIRTABLE_TABLE_ID:   ${{ secrets.AIRTABLE_TABLE_ID }}   # <- 新增這個
-        run: |
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_ID: ${{ secrets.AIRTABLE_TABLE_ID }}   
+        run:|
           echo "Calling Airtable..."
 
-          # 清掉可能混入的 CR/LF
+          
           BASE_ID_CLEAN=$(printf '%s' "$AIRTABLE_BASE_ID"  | tr -d '\r\n')
           TABLE_ID_CLEAN=$(printf '%s' "$AIRTABLE_TABLE_ID" | tr -d '\r\n')
 
@@ -25,6 +25,6 @@ jobs:
           curl -sS "$URL" \
             -H "Authorization: Bearer $AIRTABLE_TOKEN" \
             -H "Content-Type: application/json" \
-          | jq '.'
+         | jq '.'
 
 
