@@ -1,50 +1,28 @@
-name: Debug Airtable IDs
+name: Test Airtable API
 
 on:
   workflow_dispatch:
 
 jobs:
-  debug:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Show cleaned IDs
+      - name: Call Airtable API
         env:
-          AIRTABLE_BASE_ID:  ${{ secrets.AIRTABLE_BASE_ID }}
-          AIRTABLE_TABLE_ID: ${{ secrets.AIRTABLE_TABLE_ID }}
+          AIRTABLE_TOKEN:      ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID:    ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_ID:   ${{ secrets.AIRTABLE_TABLE_ID }}   # <- 新增這個
         run: |
-          clean() { printf '%s' "$1" | tr -d '\r\n'; }
-          B=$(clean "$AIRTABLE_BASE_ID")
-          T=$(clean "$AIRTABLE_TABLE_ID")
-          show() { v="$1"; echo "${v:0:3}...${v: -3} (len=$(printf '%s' "$v" | wc -c))"; }
-          echo "BASE_ID  = $(show "$B")"
-          echo "TABLE_ID = $(show "$T")"
+          echo "Calling Airtable..."
 
-      - name: List accessible bases (meta)
-        env:
-          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-        run: |
-          curl -sS https://api.airtable.com/v0/meta/bases \
-            -H "Authorization: Bearer $AIRTABLE_TOKEN" | jq '.'
+          # 清掉可能混入的 CR/LF
+          BASE_ID_CLEAN=$(printf '%s' "$AIRTABLE_BASE_ID"  | tr -d '\r\n')
+          TABLE_ID_CLEAN=$(printf '%s' "$AIRTABLE_TABLE_ID" | tr -d '\r\n')
 
-      - name: List tables inside BASE (meta)
-        env:
-          AIRTABLE_TOKEN:   ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-        run: |
-          B=$(printf '%s' "$AIRTABLE_BASE_ID" | tr -d '\r\n')
-          curl -sS "https://api.airtable.com/v0/meta/bases/$B/tables" \
-            -H "Authorization: Bearer $AIRTABLE_TOKEN" | jq '.'
-
-      - name: Try reading 1 record by TABLE_ID
-        env:
-          AIRTABLE_TOKEN:    ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID:  ${{ secrets.AIRTABLE_BASE_ID }}
-          AIRTABLE_TABLE_ID: ${{ secrets.AIRTABLE_TABLE_ID }}
-        run: |
-          B=$(printf '%s' "$AIRTABLE_BASE_ID" | tr -d '\r\n')
-          T=$(printf '%s' "$AIRTABLE_TABLE_ID" | tr -d '\r\n')
-          URL="https://api.airtable.com/v0/${B}/${T}?maxRecords=1"
+          URL="https://api.airtable.com/v0/${BASE_ID_CLEAN}/${TABLE_ID_CLEAN}?maxRecords=1"
           echo "URL(only for debug; parts may be masked)=$URL"
+
           curl -sS "$URL" \
             -H "Authorization: Bearer $AIRTABLE_TOKEN" \
-            -H "Content-Type: application/json" | jq '.'
+            -H "Content-Type: application/json" \
+          | jq '.'
