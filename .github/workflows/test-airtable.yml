@@ -1,28 +1,56 @@
-name: Test Airtable API
+name: Airtable to Trello (by Field IDs)
 
 on:
   workflow_dispatch:
 
 jobs:
-  test:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Airtable API
+      - name: Get Airtable record (return field IDs)
+        id: airtable
         env:
           AIRTABLE_TOKEN:      ${{ secrets.AIRTABLE_TOKEN }}
           AIRTABLE_BASE_ID:    ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_TABLE_ID:   ${{ secrets.AIRTABLE_TABLE_ID }}   # <- 新增這個
         run: |
-          echo "Calling Airtable..."
+          set -euo pipefail
 
-          # 清掉可能混入的 CR/LF
-          BASE_ID_CLEAN=$(printf '%s' "$AIRTABLE_BASE_ID"  | tr -d '\r\n')
-          TABLE_ID_CLEAN=$(printf '%s' "$AIRTABLE_TABLE_ID" | tr -d '\r\n')
+          BASE_ID=$(printf '%s' "$AIRTABLE_BASE_ID" |tr -d '\r\n')
+          TABLE_ID$(printf '%s' "$AIRTABLE_TABLE_ID" |tr -d '\r\n')
+          
+          URL="https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?maxRecords=1&returnFieldsByField=true"
+          echo "Fetching: $URL"
 
-          URL="https://api.airtable.com/v0/${BASE_ID_CLEAN}/${TABLE_ID_CLEAN}?maxRecords=1"
-          echo "URL(only for debug; parts may be masked)=$URL"
-
-          curl -sS "$URL" \
+          RESP=$(curl -sS "$URL"\
             -H "Authorization: Bearer $AIRTABLE_TOKEN" \
-            -H "Content-Type: application/json" \
-          | jq '.'
+            -H "Content-Type: application/json")
+            
+          echo "$RESP" | jq '.' | sed -n '1,60p'
+          echo "json<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$RESP"        >>"$GITHUB_OUTPUT"
+          echo "EOF"          >>"$GITHUB_OUTPUT"
+          
+      - name: Create Trello card (use Airtable field IDs)
+        env:
+        TRELLO_KEY:       ${{ secrets.TRELLO_KEY }}
+        
+
+      
+      - name: Create Trello Card
+        env:
+          TRELLO_KEY: ${{ secrets.TRELLO_KEY}}
+          TRELLO_TOKEN: ${{ secrest.TRELLO_TOKEN}}
+          TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID}}
+        run: |
+         echo "Sending record to TRELLO..."  #name the Trello card as the colon of the subject in Airtable
+         TITLE=$ (echo '${{ step.airtable.outputs.record }}' | jq -r '.record[0].fields["主旨"]')
+         DESC=$ (echo '${{ step.airtable.outputs.record }}' |jp-r '.record[0].fields["公文文號']       
+        
+
+          curl -XPOST "https://api.trello.com/1/cards"\
+            -d "key=$TRELLO_KEY" \
+            -d "token=$TRELLO_TOKEN"\
+            -d "idList=$TRELLO_LIST_ID" \
+            -d "name=$TITLE"\
+            -d "desc=$DESC"
