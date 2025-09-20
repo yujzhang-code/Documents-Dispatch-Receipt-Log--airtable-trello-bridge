@@ -1,82 +1,97 @@
-name: Airtable -> Trello (checkbox sync)
+name: Airtable → Trello Sync (Generic, by ID)
+
 on:
   workflow_dispatch:
+  # You can enable scheduled runs later; currently set to manual trigger only
+
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Find checked rows in Airtable
-       id fetch
-       env:
-         AIRTABLE_TOKEN:   ${{ secrets.AIRTABLE_TOKEN }}
-         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-         AIRTABLE_TABLE_ID:${{ secrets.AIRTABLE_TABLE_ID }}
+      - name: Fetch checked records from Airtable
+        id: fetch
+        env:
+          AIRTABLE_TOKEN:   ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_ID:${{ secrets.AIRTABLE_TABLE_ID }}
+          AIRTABLE_FID_CHECKBOX: ${{ secrets.AIRTABLE_FID_CHECKBOX }} # Checkbox field ID (trigger)
+          AIRTABLE_FID_URL:      ${{ secrets.AIRTABLE_FID_URL }}      # URL field ID (Trello card link)
         run: |
-         set -euo pipefail
-         FORMULA_ENC=$(python3 - << 'PY'
-import urllib.parse
-f = 'AND({TRELLO_CARD_ADDED}=1, LEN({TRELLO_CARD_USL})=0)'
-print(urllib.pharse.quote(f , safe=' '))
+          set -euo pipefail
+
+          # Query only records where:  Checkbox field is checked and  Trello card URL is empty
+          FORMULA="AND({$AIRTABLE_FID_CHECKBOX}=1, LEN({$AIRTABLE_FID_URL})=0)"
+          FORMULA_ENC=$(python3 - <<PY
+import urllib.parse,os
+print(urllib.parse.quote(os.environ['FORMULA'], safe=''))
 PY
 )
 
-          URL="https://api.airtable.com/V0/${AIRTABLE_BASE_ID}$/{AIRTABLE_TABLE_ID}?maxRecords=20&returnFieldsByFeildId=true&filterByFormula=${FORMULA_ENC}"
+          URL="https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?maxRecords=20&returnFieldsByFieldId=true&filterByFormula=${FORMULA_ENC}"
           echo "Fetching: $URL"
-          curl -sS "$URL" \
-            -H "Authorization: Bearer $AIRTABLE_TOKEN" \
-            >  records.json
+
+          curl -sS "$URL" -H "Authorization: Bearer $AIRTABLE_TOKEN" > records.json
           echo "count=$(jq '.records | length' records.json)" >> $GITHUB_OUTPUT
 
-     -name: Create Trello Card(s) and write back URL
-      if: steps.fetch.outputs.count != '0'
-      env:
-        #Airtable
-        AIRTABLE_TOKEN:      ${{ secrets.AIRTABLE_TOKEN }}
-        AIRTABLE_BASE_ID:    ${{ secrets.AIRTABLE_BASE_ID }}
-        AIRTABLE_TABLE_ID:   ${{ secrets.AIRTABLE_TABLE_ID }}
-        AIRTABLE_FID_SUBJECT:${{ secrets.AIRTABLE_FID_SUBJECT }}
-        AIRTABLE_FID_DOCNO:  ${{ secrets.AIRTABLE_FID_DOCNO }}
-        AIRTABLE_FID_DUE:    ${{ secrets.AIRTABLE_FID_DUE }}
-        #Trello
-        TRELLO_KEY:          ${{ secrets.TRELLO_KEY }}
-        TRELLO_TOKEN:        ${{ secrets.TRELLO_TOKEN }}
-        TRELLO_LIST_ID:      ${{ secrets.TRELLO_LIST_ID }}
-    run: |
-      set -euo pipefail
+      - name: Create Trello cards and write back
+        if: steps.fetch.outputs.count != '0'
+        env:
+          # Airtable credentials and field IDs
+          AIRTABLE_TOKEN:   ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_ID:${{ secrets.AIRTABLE_TABLE_ID }}
 
-      n=$(jq '.records |  length' records.json)
-      echo "Need to create $n Trello card(s)"
+          AIRTABLE_FID_SUBJECT: ${{ secrets.AIRTABLE_FID_SUBJECT }}
+          AIRTABLE_FID_DOCNO:   ${{ secrets.AIRTABLE_FID_DOCNO }}
+          AIRTABLE_FID_DUE:     ${{ secrets.AIRTABLE_FID_DUE }}
+          AIRTABLE_FID_URL:     ${{ secrets.AIRTABLE_FID_URL }}
+          AIRTABLE_FID_DATE:    ${{ secrets.AIRTABLE_FID_DATE }}
+          # Trello credentials
+          TRELLO_KEY:           ${{ secrets.TRELLO_KEY }}
+          TRELLO_TOKEN:         ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_LIST_ID:       ${{ secrets.TRELLO_LIST_ID }}
+        run: |
+          set -euo pipefail
+          n=$(jq '.records | length' records.json)
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-     for i in $(seq 0 $((n-1))); do
-       rec_id=$(jq -r ".records[$i].id" records.json)
+          for i in $(seq 0 $((n-1))); do
+            rec_id=$(jq -r ".records[$i].id" records.json)
+            SUBJECT=$(jq -r ".records[$i].fields[env.AIRTABLE_FID_SUBJECT] // empty" records.json)
+            DOCNO=$(jq -r   ".records[$i].fields[env.AIRTABLE_FID_DOCNO]   // empty" records.json)
+            DUE=$(jq -r     ".records[$i].fields[env.AIRTABLE_FID_DUE]     // empty" records.json)
 
-       # 取欄位值(用 Feild ID)
-       SUBJECT=$(jq -r ".records[$i].fields[env.AIRTABLE_FID_SUBJECT]"records.json)
-       DOCNO=$(jq -r   ".records[$i].fields[env.AIRTABLE_FID_DOCNO]"  records.json)
-       DUE=$(JQ -r     ".records[$i}.fileds[env.AIRTABLE_FID_DUE]"    records.json)
+            [ -z "$SUBJECT" ] && echo "::warning::Record $rec_id missing subject, skip." && continue
 
-       # create Trello Card
-       CARD=$(curl -sS -X POST "https://api.trello.com/1/cards" \
-          --data-urlencode "idList=${TRELLO_LIST_ID}" \
-          --data-urlencode "name=${SUBJECT} \
-          --data-urlencode "desc=公文文號 : ${DOCNO}" \
-          --data "key=${TRELLO_KEY} \
-          --data "token=${TRELLO_TOKEN}")
+            # Create Trello Card
+            CARD=$(
+              curl -sS -X POST "https://api.trello.com/1/cards" \
+                --data-urlencode "idList=$TRELLO_LIST_ID" \
+                --data-urlencode "name=$SUBJECT" \
+                --data-urlencode "desc=DOCNO: $DOCNO" \
+                --data-urlencode "due=$DUE" \
+                -d "key=$TRELLO_KEY" \
+                -d "token=$TRELLO_TOKEN"
+            )
+            CARD_URL=$(echo "$CARD" | jq -r '.shortUrl')
 
-       CARD_URL=$ (echo "$CARD_jq -r '.shortUrl')
-       if [ "$CARD_URL" = "null" ] || [ -z "$CARD_URL" ];then
-         echo "::warning::Create card failed for record $rec_id: $CARD" 
-         continue
-      fi
-      echo "Create card: $CARD_URL"
+            echo "Created Trello card: $CARD_URL"
 
-      #回寫 Airtable
-      # -「Trello 卡片網址」: 填入Trello連結
-      # -「Trello鍵入日期」: 填入NOW (保留checkbox不動)
-      # 若想以欄位ID寫入，請把 fields的鍵改成對應fldxxx，並加讓 ?returnFieldsByFieldId=true
-      PATCH_BODY=$(jq -n --arg
+            # Update Airtable with Trello card URL and creation date
+            PATCH=$(jq -n --arg id "$rec_id" --arg url "$CARD_URL" --arg dt "$NOW" \
+              --arg fid_url "$AIRTABLE_FID_URL" --arg fid_date "$AIRTABLE_FID_DATE" '
+              { "records": [ { "id": $id,
+                               "fields": {
+                                 ($fid_url): $url,
+                                 ($fid_date): $dt
+                               } } ] }')
 
-      
+            curl -sS -X PATCH "https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?returnFieldsByFieldId=true" \
+              -H "Authorization: Bearer $AIRTABLE_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "$PATCH" > /dev/null
+          done
 
 
 
