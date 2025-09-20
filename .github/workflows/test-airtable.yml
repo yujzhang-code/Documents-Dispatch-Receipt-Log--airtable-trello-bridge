@@ -1,95 +1,50 @@
-name: Airtable to Trello (by Field IDs)
+name: Debug Airtable IDs
 
 on:
   workflow_dispatch:
 
 jobs:
-  sync:
+  debug:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Airtable record (return field IDs)
-        id: airtable
+      - name: Show cleaned IDs
         env:
-          AIRTABLE_TOKEN:      ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID:    ${{ secrets.AIRTABLE_BASE_ID }}
-          AIRTABLE_TABLE_ID:   ${{ secrets.AIRTABLE_TABLE_ID }}   # <- 新增這個
+          AIRTABLE_BASE_ID:  ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_ID: ${{ secrets.AIRTABLE_TABLE_ID }}
         run: |
-          set -euo pipefail
+          clean() { printf '%s' "$1" | tr -d '\r\n'; }
+          B=$(clean "$AIRTABLE_BASE_ID")
+          T=$(clean "$AIRTABLE_TABLE_ID")
+          show() { v="$1"; echo "${v:0:3}...${v: -3} (len=$(printf '%s' "$v" | wc -c))"; }
+          echo "BASE_ID  = $(show "$B")"
+          echo "TABLE_ID = $(show "$T")"
 
-          BASE_ID=$(printf '%s' "$AIRTABLE_BASE_ID" |tr -d '\r\n')
-          TABLE_ID$(printf '%s' "$AIRTABLE_TABLE_ID" |tr -d '\r\n')
-          
-          URL="https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?maxRecords=1&returnFieldsByField=true"
-          echo "Fetching: $URL"
+      - name: List accessible bases (meta)
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+        run: |
+          curl -sS https://api.airtable.com/v0/meta/bases \
+            -H "Authorization: Bearer $AIRTABLE_TOKEN" | jq '.'
 
-          RESP=$(curl -sS "$URL"\
+      - name: List tables inside BASE (meta)
+        env:
+          AIRTABLE_TOKEN:   ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          B=$(printf '%s' "$AIRTABLE_BASE_ID" | tr -d '\r\n')
+          curl -sS "https://api.airtable.com/v0/meta/bases/$B/tables" \
+            -H "Authorization: Bearer $AIRTABLE_TOKEN" | jq '.'
+
+      - name: Try reading 1 record by TABLE_ID
+        env:
+          AIRTABLE_TOKEN:    ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID:  ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_TABLE_ID: ${{ secrets.AIRTABLE_TABLE_ID }}
+        run: |
+          B=$(printf '%s' "$AIRTABLE_BASE_ID" | tr -d '\r\n')
+          T=$(printf '%s' "$AIRTABLE_TABLE_ID" | tr -d '\r\n')
+          URL="https://api.airtable.com/v0/${B}/${T}?maxRecords=1"
+          echo "URL(only for debug; parts may be masked)=$URL"
+          curl -sS "$URL" \
             -H "Authorization: Bearer $AIRTABLE_TOKEN" \
-            -H "Content-Type: application/json")
-            
-          echo "$RESP" | jq '.' | sed -n '1,60p'
-          echo "json<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$RESP"        >>"$GITHUB_OUTPUT"
-          echo "EOF"          >>"$GITHUB_OUTPUT"
-          
-      - name: Create Trello card (use Airtable field IDs)
-        env:
-           TRELLO_KEY:     ${{ secrets.TRELLO_KEY }}
-           TRELLO_TOKEN:   ${{ secrets.TRELLO_TOKEN  }}
-           TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
-           F_SUBJECT: ${{ secrets.TRELLO_FID_SUBJECT }}
-           F_DOCNO:   ${{ screts.TRELLO_FID_DOCNO }}
-           F_DUE:     ${{ secrets.TRELLO_FID_DUE }}
-        run: |
-          set -euo pipfail
-
-          J='${{ steps.airtable.outputs.json }}'
-          echo "Parsing Airtable JSON..."
-          SUBJECT=$(echo "$J" | jp -r --arg k "$F_SUBJECT" '.records[0].field[$k] // empty')
-          DOCNO=$(  echo "$J" | jp -r --arg k "$F_DOCNO"   '.records[0].field[$k} // empty')
-          DUE=$(    echo "$J" | jp -r --arg k "$F_DUE"     '.records[0].field[$k] // empty')
-
-          if [ -z "$SUBJECT' ] || [ "$SUBJECT" = "null" ]; then
-            echo "::error:: The Card Subject is not found! (please check AIRTABLE_FID_SUBJECT)"
-            exit 1
-          fi
-
-          DESC=""
-          if [ -n "${DOCNO:-}" ] && [ "$DOCNO"] != "null" ]; then
-            DESC="公文文號: $DOCNO"
-          fi
-
-          echo "Will create Trello card:"
-          echo "  name = $SUBJECT"
-          echo "  desc = ${DESC:-<empty>}"
-          echo "  due  = ${DUE:-<none>}"
-
-          params=(
-           --data-urlencode "name=$SUBJECT"
-           --data-urlencode "desc=$DESC"
-           -d "idList=$TRELLO_LIST_ID"
-           -d "key=$TRELLO_KEY"
-           -d "token=$TRELLO_TOKEN"
-          )
-          if [-n "${DUE:-}" ] && [ "$DUE" !="null" ];then
-            params+=(-d "due=$DUE")
-          fi
-
-          echo "Creating Trello Card..."
-          curl -sS -X POST "https://api.trello.com/1/cards" "${params[@]}" | jq '.'
-          
-        
-
-      
-      - name: Create Trello Card
-        env:
-          TRELLO_KEY: ${{ secrets.TRELLO_KEY}}
-          TRELLO_TOKEN: ${{ secrest.TRELLO_TOKEN}}
-          TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID}}
-        run: |
-         curl -s -X POST "https://api.trello.com/1/cards" \
-         -d "idList=$TRELLO_LIST_ID" \
-         -d "name=$SUBJECT' \
-         -d "desc=公文文號: $DOCNO" \
-         -d "due=#DUE" \
-         -d "key=$TRELLO_KEY" \
-         -d "token=$TRELLO_TOKEN"
+            -H "Content-Type: application/json" | jq '.'
