@@ -86,14 +86,10 @@ jobs:
           TRELLO_TOKEN: ${{ secrest.TRELLO_TOKEN}}
           TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID}}
         run: |
-         echo "Sending record to TRELLO..."  #name the Trello card as the colon of the subject in Airtable
-         TITLE=$ (echo '${{ step.airtable.outputs.record }}' | jq -r '.record[0].fields["主旨"]')
-         DESC=$ (echo '${{ step.airtable.outputs.record }}' |jp-r '.record[0].fields["公文文號']       
-        
-
-          curl -XPOST "https://api.trello.com/1/cards"\
-            -d "key=$TRELLO_KEY" \
-            -d "token=$TRELLO_TOKEN"\
-            -d "idList=$TRELLO_LIST_ID" \
-            -d "name=$TITLE"\
-            -d "desc=$DESC"
+         curl -s -X POST "https://api.trello.com/1/cards" \
+         -d "idList=$TRELLO_LIST_ID" \
+         -d "name=$SUBJECT' \
+         -d "desc=公文文號: $DOCNO" \
+         -d "due=#DUE" \
+         -d "key=$TRELLO_KEY" \
+         -d "token=$TRELLO_TOKEN"
