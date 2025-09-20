@@ -93,17 +93,16 @@ jobs:
          -d "due=#DUE" \
          -d "key=$TRELLO_KEY" \
          -d "token=$TRELLO_TOKEN"
-name: Airtable → Trello Sync (Generic, by ID)
+         
+      - name: Airtable → Trello Sync (Generic, by ID)
+        workflow_dispatch:
+        # You can enable scheduled runs later; currently set to manual trigger only
 
-on:
-  workflow_dispatch:
-  # You can enable scheduled runs later; currently set to manual trigger only
+        jobs:
+        sync:
+        runs-on: ubuntu-latest
 
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-
-    steps:
+       steps:
       - name: Fetch checked records from Airtable
         id: fetch
         env:
