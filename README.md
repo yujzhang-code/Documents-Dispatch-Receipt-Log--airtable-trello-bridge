@@ -1,9 +1,10 @@
 # 🚀 Automate your Airtable → GitHub → Trello workflow in one click!
+# Airtable → Trello Sync
+This GitHub Actions workflow syncs Airtable rows into Trello cards.
+
 ## Badge
 ![Last Commit](https://img.shields.io/github/last-commit/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
 ![Open Issues](https://img.shields.io/github/issues/yujzhang-code/Documents-Dispatch-Receipt-Log--airtable-trello-bridge)
-
-# Documents Dispatch and Receipt Log
 
 ## Table of Contents
 - [Project Introduction](#project-introduction-)
@@ -55,7 +56,26 @@ graph LR
 1. Secure management of API Keys/Tokens through GitHub Secrets
 2. Fully automated process
 3. Extensible to other project workflows
+## Setup
 
+1. **Fork this repo**.
+2. In your repo → Settings → Secrets and variables → Actions, add:
+
+### Airtable Secrets
+- `AIRTABLE_TOKEN` – Create a personal access token with `data.records:read`, `data.records: write`.
+- `AIRTABLE_BASE_ID` – From your Airtable API docs (starts with `app...`).
+- `AIRTABLE_TABLE_ID` – From your Airtable API docs (starts with `tbl...`).
+- `AIRTABLE_FID_CHECKBOX` – Field ID of the checkbox column used to trigger card creation.
+- `AIRTABLE_FID_URL` – Field ID of the text column where Trello card URL will be stored.
+- `AIRTABLE_FID_DATE` – Field ID of the date column where creation date will be stored.
+- `AIRTABLE_FID_SUBJECT` – Field ID of the subject/title field.
+- `AIRTABLE_FID_DOCNO` – Field ID of the document number field.
+- `AIRTABLE_FID_DUE` – Field ID of the due date field (optional).
+
+### Trello Secrets
+- `TRELLO_KEY` – From https://trello.com/app-key
+- `TRELLO_TOKEN` – Generate on the same page after selecting your app key.
+- `TRELLO_LIST_ID` – ID of the Trello List to insert new cards (use Trello API `/1/boards/{id}/lists`).
 ## Usage
 1. Clone this repository:
    ```bash
@@ -67,6 +87,8 @@ graph LR
    * Mark a record in Airtable.
    * A GitHub Issue will be created automatically.
    * A new Trello card will appear in the "To Do List" column.
+   * Run the workflow (Actions → Run workflow).  
+   * A new Trello card will be created, and the URL + creation date will be    written back to Airtable.
 
 ## Future Improvements / TODO
 - [ ] **Integrate Slack notification**  
@@ -78,6 +100,8 @@ graph LR
 - [ ] **Add unit tests for API calls**  
   Implement automated tests (e.g., with Jest + mocked Trello API) to validate API requests and responses.  
   *Value:* Ensures the reliability and maintainability of the automation, and demonstrates professional software engineering practices.
+
+
 
 ## Repository Structure
 ```
